@@ -1,0 +1,347 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+{% block head %}
+
+<script
+    src="https://maps.googleapis.com/maps/api/js?key={{GOOGLE_MAP_API_KEY}}&callback=initMap&libraries=places&v=weekly"
+    defer></script>
+
+<style>
+    .card {
+        font-family: "Poppins";
+    }
+
+    #create {
+        font-family: "Poppins";
+    }
+
+    #pills-tab a {
+        color: black;
+        font-family: "Poppins";
+    }
+
+    #pills-tab a:hover {
+        color: rgb(170, 185, 233);
+        text-decoration: none;
+    }
+
+    #pills-tab a.active {
+        color: rgb(170, 185, 233);
+    }
+
+    #origin-map,
+    #end-map {
+        height: 100%;
+    }
+
+    #pills-tabContent {
+        font-family: "Poppins";
+    }
+
+    .button-up {
+        position: relative;
+        bottom: 10px;
+        z-index: 1;
+    }
+</style>
+
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!--Left Side-->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    Listing Summary
+                </div>
+                <div class="card-body">
+                    {% if not spot %}
+                    <p>An outline of your listing info will appear here</p>
+                    {% else %}
+
+                    {% if step > 1 %}
+                    <p class="text-secondary"><small><b>Origin Point</b></small></p>
+                    <h4>{{spot.origin_point}}</h4>
+                    {% endif %}
+
+                    {% if step > 2 %}
+                    <hr />
+                    <p class="text-secondary"><small><b></b>End Point</small></p>
+                    <h4>{{spot.end_point}}</h4>
+                    {% endif %}
+
+                    {% if step > 3 %}
+                    <hr />
+                    <p class="text-secondary"><small><b></b>Info</small></p>
+                    <h4>{{spot.description}}</h4>
+                    <h4>Type of Vehicle: {{spot.Types_of_Vehicle}}</h4>
+                    <h4>Individuals: {{spot.Individuals}}</h4>
+                    {% endif %}
+
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+        <!--Right Side-->
+        <div class="col-lg-8">
+
+            <!--Steps Tab-->
+            <div class="card mb-5">
+                <div class="card-body">
+
+                    <ul class="nav nav-pills nav-justified align-items-center" id="pills-tab" role="tablist">
+                        <li class="nav-item" role="presentation">
+
+                            <a class="{% if step == 1 %}active{% endif %}" id="pills-origin-tab" data-toggle="pill"
+                                href="#pills-origin" role="tab" aria-controls="pills-origin" aria-selected="true">Origin
+                            </a>
+                        </li>
+                        <i class="fas fa-grip-lines-vertical"></i>
+                        <li class="nav-item" role="presentation">
+                            <a class="{% if step == 2 %}active{% endif %}" id="pills-end-tab" data-toggle="pill"
+                                href="#pills-end" role="tab" aria-controls="pills-end" aria-selected="false">End
+                                Point</a>
+                        </li>
+                        <i class="fas fa-grip-lines-vertical"></i>
+                        <li class="nav-item" role="presentation">
+                            <a class="{% if step == 3 %}active{% endif %}" id="pills-info-tab" data-toggle="pill"
+                                href="#pills-info" role="tab" aria-controls="pills-info" aria-selected="false">Info</a>
+                        </li>
+                        <i class="fas fa-grip-lines-vertical"></i>
+                        <li class="nav-item" role="presentation">
+                            <a class="{% if step == 4 %}active{% endif %}" id="pills-payment-tab" data-toggle="pill"
+                                href="#pills-payment" role="tab" aria-controls="pills-payment"
+                                aria-selected="false">Payment</a>
+                        </li>
+                    </ul>
+
+                </div>
+            </div>
+
+            <!--Steps Forms-->
+            <b id="create">Create Listing</b>
+            <div class="tab-content" id="pills-tabContent">
+
+                <!--Step 1 Start Point-->
+                <div class="tab-pane fade {% if step == 1 %}show active{% endif %}" id="pills-origin" role="tabpanel"
+                    aria-labelledby="pills-origin-tab">
+                    <h1>Origin Address</h1>
+
+                    <form method="POST" enctype="multipart/form-data" id="yes">
+                        <div class=" card bg-transparent border-dark mt-2 mb-5 ">
+                            <div class="card-body">
+
+                                <div class="row">
+                                    <div class="col-lg-8">
+                                        {% csrf_token %}
+                                        {% bootstrap_form step1_form exclude='origin_lat, origin_lng' %}
+                                        <input hidden id="origin_lat" name="origin_lat" value="{{ spot.origin_lat }}" />
+                                        <input hidden id="origin_lng" name="origin_lng" value="{{ spot.origin_lng }}">
+                                    </div>
+                                    <div class="col-lg-4">
+                                        <div id="origin-map"></div>
+                                        <div id="origin-infowindow-content">
+                                            <img src="" width="0" height="0" id="origin-place-icon" />
+                                            <span id="origin-place-name" class="title"></span><br />
+                                            <span id="origin-place-address"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="step" value="1">
+                        <button type="submit" class="btn btn-outline border-dark">Save & Continue</button>
+                    </form>
+                </div>
+
+                <!--Step 2 End Point-->
+                <div class="tab-pane fade {% if step == 2 %}show active{% endif %}" id="pills-end" role="tabpanel"
+                    aria-labelledby="pills-end-tab">
+                    <h1>End Point</h1>
+
+                    <form method="POST" enctype="multipart/form-data" id="yes">
+                        <div class=" card bg-transparent border-dark mt-2 mb-5">
+                            <div class="card-body">
+
+                                <div class="row">
+                                    <div class="col-lg-8">
+                                        {% csrf_token %}
+                                        {% bootstrap_form step2_form exclude='end_lat, end_lng' %}
+                                        <input hidden id="end_lat" name="end_lat" value="{{ spot.end_lat }}" />
+                                        <input hidden id="end_lng" name="end_lng" value="{{ spot.end_lng }}">
+                                    </div>
+                                    <div class="col-lg-4">
+                                        <div id="end-map"></div>
+                                        <div id="end-infowindow-content">
+                                            <img src="" width="0" height="0" id="end-place-icon" />
+                                            <span id="end-place-name" class="title"></span><br />
+                                            <span id="end-place-address"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="step" value="2">
+                        <button type="button" class="btn btn-outline-warning"
+                            onclick="$('#pills-origin-tab').tab('show');">Back
+                        </button>
+                        <button type="submit" class="btn btn-outline border-dark">Save & Continue</button>
+                    </form>
+                </div>
+
+                <!--Step 3 Info-->
+                <div class="tab-pane fade {% if step == 3 %}show active{% endif %}" id="pills-info" role="tabpanel"
+                    aria-labelledby="pills-info-tab">
+                    <h1>Info</h1>
+
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="card bg-white mt-2 mb-5">
+                            <div class="card-body">
+                                {% csrf_token %}
+                                {% bootstrap_form step3_form %}
+                            </div>
+                        </div>
+                        <input type="hidden" name="step" value="3">
+                        <div class="button-up">
+                            <button type="button" class="btn btn-outline-warning"
+                                onclick="$('#pills-end-tab').tab('show');">Back</button>
+                            <button type="submit" class="btn btn-outline border-dark">Save & Continue</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!--Step 4 Payment-->
+                <div class="tab-pane fade {% if step == 4 %}show active{% endif %}" id="pills-payment" role="tabpanel"
+                    aria-labelledby="pills-payment-tab">
+                    <h1>Payment</h1>
+
+                    <form method="POST">
+                        <div class="card bg-white mt-2 mb-5">
+                            <div class="card-body">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label>Credit/Debit Card</label>
+                                    <input class="form-control"
+                                        value="**** **** **** {{ request.user.passenger.stripe_card_last4 }}" disabled>
+                                </div>
+                                <div class="form-group">
+                                    <label>Price</label>
+                                    <input class="form-control" name="listing_price" value="${{ spot.price }}" disabled>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="step" value="4">
+                        <div class="button-up">
+                            <button type="button" class="btn btn-outline-warning"
+                                onclick="$('#pills-info-tab').tab('show');">Back</button>
+                            <button type="submit" class="btn btn-outline border-dark">Create Listing</button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    var originLat = parseFloat('{{ spot.origin_lat }}');
+    var originLng = parseFloat('{{ spot.origin_lng }}');
+
+    var endLat = parseFloat('{{ spot.end_lat }}');
+    var endLng = parseFloat('{{ spot.end_lng }}');
+
+    function initMapByType(type, initLat, initLng) {
+        const map = new google.maps.Map(document.getElementById(type + "-map"), {
+            center: { lat: initLat || 40.749933, lng: initLng || -73.98633 },
+            zoom: 13,
+            mapTypeControl: false,
+            streetViewControl: false,
+            keyboardShortcuts: false,
+            zoomControl: false,
+
+        });
+
+        if (initLat && initLng) {
+            new google.maps.Marker({
+                position: new google.maps.LatLng(initLat, initLng),
+                map: map,
+            })
+        }
+
+        const input = document.getElementById("id_" + type + "_point");
+        const autocomplete = new google.maps.places.Autocomplete(input);
+        // Bind the map's bounds (viewport) property to the autocomplete object,
+        // so that the autocomplete requests use the current map bounds for the
+        // bounds option in the request.
+        autocomplete.bindTo("bounds", map);
+        // Set the data fields to return when the user selects a place.
+        autocomplete.setFields(["address_components", "geometry", "icon", "name"]);
+        const infowindow = new google.maps.InfoWindow();
+        const infowindowContent = document.getElementById(type + "-infowindow-content");
+        infowindow.setContent(infowindowContent);
+        const marker = new google.maps.Marker({
+            map,
+            anchorPoint: new google.maps.Point(0, -29),
+        });
+        autocomplete.addListener("place_changed", () => {
+            infowindow.close();
+            marker.setVisible(false);
+            const place = autocomplete.getPlace();
+
+            if (!place.geometry) {
+                // User entered the name of a Place that was not suggested and
+                // pressed the Enter key, or the Place Details request failed.
+                window.alert("No details available for input: '" + place.name + "'");
+                return;
+            }
+
+            // If the place has a geometry, then present it on a map.
+            if (place.geometry.viewport) {
+                map.fitBounds(place.geometry.viewport);
+            } else {
+                map.setCenter(place.geometry.location);
+                map.setZoom(17); // Why 17? Because it looks good.
+            }
+            marker.setPosition(place.geometry.location);
+            marker.setVisible(true);
+            let address = "";
+
+            if (place.address_components) {
+                address = [
+                    (place.address_components[0] &&
+                        place.address_components[0].short_name) ||
+                    "",
+                    (place.address_components[1] &&
+                        place.address_components[1].short_name) ||
+                    "",
+                    (place.address_components[2] &&
+                        place.address_components[2].short_name) ||
+                    "",
+                ].join(" ");
+            }
+            infowindowContent.children[type + "-place-icon"].src = place.icon;
+            infowindowContent.children[type + "-place-name"].textContent = place.name;
+            infowindowContent.children[type + "-place-address"].textContent = address;
+            infowindow.open(map, marker);
+
+
+            $("#" + type + "_lat").val(place.geometry.location.lat());
+            $("#" + type + "_lng").val(place.geometry.location.lng());
+        });
+
+    }
+
+    function initMap() {
+        initMapByType("origin", originLat, originLng);
+        initMapByType("end", endLat, endLng);
+    }
+</script>
+
+{% endblock %}

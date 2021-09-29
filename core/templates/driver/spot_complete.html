@@ -1,0 +1,32 @@
+{% extends 'driver/base.html' %}
+{% load static %}
+
+// Include the google font link to use poppins font
+
+{% block head %}
+
+<style>
+    .success-content {
+        font-family: "Poppins";
+        text-align: center;
+    }
+
+    .congrats {
+        font-weight: bold;
+    }
+</style>
+
+{% endblock %}
+
+{% block content %}
+<div class="h-100 d-flex flex-column align-items-center justify-content-center">
+    <div class="success-content">
+        <img src="{% static 'img/SUCCESS.gif' %}" class="mb-3" width="200" height="200">
+        <p class="congrats">Drive Complete. Congrats!</p>
+
+        <a href="{% url 'driver:home' %}" class="btn btn-warning">Check Available Jobs</a>
+    </div>
+</div>
+
+
+{% endblock %}

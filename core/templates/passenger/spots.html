@@ -1,0 +1,65 @@
+{% extends 'passenger/base.html' %}
+
+{% block main %}
+
+{% url 'passenger:current_listings' as current_listings_url %}
+{% url 'passenger:archived_listings' as archived_listings_url %}
+
+<style>
+    .media-body {
+        font-family: 'Courier New', Courier, monospace;
+    }
+
+    .divider {
+        width: 500px;
+        height: 10px;
+    }
+</style>
+<!--Tabs-->
+
+<ul class="nav nav-pills nav-fill">
+    <li class="nav-item mt-2">
+        <a class="nav-link {% if request.path == current_listings_url %} active {%endif%}"
+            href="{% url 'passenger:current_listings' %}">Current Listings</a>
+    </li>
+    <li class="nav-item mt-2">
+        <a class="nav-link {% if request.path == archived_listings_url %} active {% endif %}"
+            href="{% url 'passenger:archived_listings' %}">Archived Listings</a>
+    </li>
+</ul>
+
+<!--List of Spots-->
+<div class="list-group mt-3">
+    {% if spot %}
+
+    {% for spot in spot %}
+    <a href="{%url 'passenger:listing' spot.id %}" class="list-group-item list-group-item-action">
+        <div class="media">
+            <img src="{{ spot.photo.url }}" class="rounded-lg mr-3" width="100" height="100">
+            <div class="media-body">
+                <div class="row ml-3 mb-3">
+
+                    <h6 class="mt-2 mb-2 fas fa-map-marker-alt"> {{spot.origin_point}}</h6>
+                    <h6 class="mt-2 mb-2 fas fa-flag-checkered"> {{spot.end_point}}</h6>
+                    <div class="divider"></div>
+                    <div class="content mt-2">
+                        <p>Price: ${{spot.price}}</p>
+                        <div><span class="badge badge-warning mb-2">{{spot.get_status_display}}</span></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </a>
+
+    {% endfor %}
+
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center">
+            Nothing to show here yet!
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

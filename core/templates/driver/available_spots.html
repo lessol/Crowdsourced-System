@@ -1,0 +1,156 @@
+{% extends 'driver/base.html' %}
+
+{% block head %}
+
+<script src="https://maps.googleapis.com/maps/api/js?key={{GOOGLE_MAP_API_KEY}}&callback=initMap&libraries=&v=weekly"
+    defer>
+    </script>
+
+<script>
+    function initMap() {
+        // The map
+        const map = new google.maps.Map(document.getElementById("map"), {
+            zoom: 13,
+            center: { lat: 41.85, lng: -87.65 },
+        });
+
+        // Get available spots via api
+        fetch("{% url 'driver:available_spots_api' %}")
+            .then(response => response.json())
+            .then(json => {
+
+                // A new viewpoint bound
+                var bounds = new google.maps.LatLngBounds();
+
+                for (let i = 0; i < json.spots.length; i++) {
+                    const spot = json.spots[i];
+                    const position = { lat: spot.origin_lat, lng: spot.origin_lng }
+                    const marker = new google.maps.Marker({
+                        position,
+                        map,
+                    });
+
+                    // Increase the bounds to take this point
+                    bounds.extend(position);
+
+                    new google.maps.InfoWindow({
+                        content: "<small><b>" + spot.origin_point + "</b></small><br/>$<small>" + spot.distance + "Km</small>"
+                    }).open(map, marker)
+
+                    // Click event for the spot
+                    marker.addListener("click", () => {
+                        showSpotDetails(spot);
+                    });
+
+                    // Fit the bounds to the map
+                    map.fitBounds(bounds);
+                }
+            })
+    }
+
+    function showSpotDetails(spot) {
+        $("#spot-details").css("display", "block");
+
+        $("#spot-photo").attr('src', "/media/" + spot.photo);
+        $("#origin-point").html(spot.origin_point);
+        $("#end-point").html(spot.end_point);
+        $("#duration").html(spot.duration);
+        $("#distance").html(spot.distance);
+        $("#guests").html(spot.Number_of_Guest);
+        $("#vehicle").html(spot.Types_of_Vehicle);
+        $("#price").html(spot.price);
+
+        $("#spot-details").on("click", function () {
+            window.location.href = "/driver/spots/available/" + spot.id + "/";
+        })
+    }
+
+</script>
+
+<style>
+    .gm-ui-hover-effect {
+        display: none !important;
+    }
+
+    #map {
+        flex: 1;
+    }
+
+    small {
+        font-size: 12px;
+        line-height: 1.2rem;
+    }
+
+    .card {
+        border: none;
+    }
+
+    #spot-details {
+        display: none;
+    }
+
+    .media-body {
+        font-family: "Poppins";
+    }
+
+    #price {
+        font-family: "Poppins";
+    }
+</style>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex flex-column h-100" style="padding-bottom: 60px;">
+    <div id="map"></div>
+
+    <div id="spot-details" class="card">
+        <div class="card-body p-2">
+            <div class="media">
+                <img id="spot-photo" class="rounded-lg mr-3" width="50px" height="50px">
+                <div class="media-body">
+                    <b id="passenger-name"></b>
+                    <div class="d-flex">
+                        <div class="flex-grow-1 mr-2">
+                            <small class="text-success">
+                                <i class="fas fa-car"></i> <span id="distance"></span> miles
+                                <i class="far fa-clock ml-2"></i> <span id="duration"></span> mins
+                            </small>
+
+                            <div class="d-flex align-items-center mt-2">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <small id="origin-point" class="text-secondary ml-2"></small>
+                            </div>
+
+                            <div class="d-flex align-items-center mt-2">
+                                <i class="fas fa-flag-checkered"></i>
+                                <small id="end-point" class="text-secondary ml-2"></small>
+                            </div>
+
+                            <div class="d-flex align-items-center mt-2">
+                                <small class="text-dark ml-2">Passenger guests: </small>
+                                <small id="guests" class="text-secondary ml-2"></small>
+                            </div>
+
+                            <div class="d-flex align-items-center mt-2">
+                                <small class="text-dark ml-2">Type of Vehicle: </small>
+                                <small id="vehicle" class="text-secondary ml-2"></small>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                $<h3 id="price"></h3>
+
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{% include 'driver/lower_tab.html' %}
+
+{% endblock %}

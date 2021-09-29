@@ -1,0 +1,160 @@
+{% extends 'driver/base.html' %}
+{% load static %}
+
+{% block head %}
+
+<script src="https://maps.googleapis.com/maps/api/js?key={{GOOGLE_MAP_API_KEY}}&callback=initMap&libraries=&v=weekly"
+    defer>
+    </script>
+
+<script>
+
+    var originLat = parseFloat("{{ listing.origin_lat }}");
+    var originLng = parseFloat("{{ listing.origin_lng }}");
+    var endLat = parseFloat("{{ listing.end_lat }}");
+    var endLng = parseFloat("{{ listing.end_lng }}");
+
+    function initMap() {
+
+        if (!document.getElementById("map")) {
+            return;
+        }
+        const directionsService = new google.maps.DirectionsService();
+        const directionsRenderer = new google.maps.DirectionsRenderer();
+        const map = new google.maps.Map(document.getElementById("map"), {
+            zoom: 7,
+            center: { lat: 41.85, lng: -87.65 },
+        });
+        directionsRenderer.setMap(map);
+
+        calculateAndDisplayRoute(directionsService, directionsRenderer);
+        updateDriverPostion(map);
+    }
+
+    function calculateAndDisplayRoute(directionsService, directionsRenderer) {
+        directionsService
+            .route({
+                origin: new google.maps.LatLng(originLat, originLng),
+                destination: new google.maps.LatLng(endLat, endLng),
+                travelMode: google.maps.TravelMode.DRIVING,
+            })
+            .then((response) => {
+                directionsRenderer.setDirections(response);
+            })
+
+
+            .catch((e) => window.alert("Directions request failed due to " + status));
+    }
+
+    function updateDriverPostion(map) {
+        navigator.geolocation.watchPosition(
+            pos => {
+                var driverPosition = new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+                var img = "{% static 'img/suv.png' %}";
+                if (!window.driverMarker) {
+                    window.driverMarker = new google.maps.Marker({
+                        position: driverPosition,
+                        map,
+                        icon: img,
+                    });
+                } else {
+                    window.driverMarker.setPosition(driverPosition);
+                }
+
+                map.panTo(driverPosition);
+            },
+            pos => console.log(pos))
+    }
+
+</script>
+
+
+<style>
+    #map {
+        flex: 1;
+    }
+
+    small {
+        font-size: 12px;
+        line-height: 1.2rem;
+        font-family: "Poppins";
+    }
+
+    .card {
+        border: none;
+        font-family: "Poppins";
+    }
+
+    .text-center {
+        font-family: "Poppins";
+    }
+</style>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex flex-column h-100" style="padding-bottom: 60px;">
+
+    <div class="text-center">
+        <div class="btn-group mt-1 mb-1 align-items-center" role="group">
+            <a href="{% url 'driver:spot_complete' %}" class="btn btn-dark">CURRENT DRIVES</a>
+            <a href="{% url 'driver:archived_spots' %}" class="btn btn-outline-dark">ARCHIVED DRIVES</a>
+        </div>
+    </div>
+
+    {% if listing %}
+
+    <div id="map"></div>
+
+    <div class="card">
+        <div class="card-body p-2">
+            <div class="media">
+                <img src="{{ listing.photo.url }}" class=" rounded-lg mr-3" width="50px" height="50px">
+                <div class="media-body">
+                    <b>Drive Request</b>
+                    <div class="d-flex">
+                        <div class="flex-grow-1 mr-2">
+
+                            <small class="text-success">
+                                <i class="fas fa-car"></i> <span>{{listing.distance}}</span> km
+                                <i class="far fa-clock ml-2"></i> <span>{{listing.duration}}</span> mins
+                            </small>
+
+                            <div class="d-flex align-items-center mt-2">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <small class="text-secondary ml-2">{{listing.origin_point}}</small>
+                            </div>
+
+                            <div class="d-flex align-items-center mt-2">
+                                <i class="fas fa-flag-checkered"></i>
+                                <small class="text-secondary ml-2">{{listing.end_point}}</small>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+                $<h3>{{listing.price}}</h3>
+
+            </div>
+
+            <a href="{% url 'driver:current_listing_arrival_photo' listing.id %}"
+                class="btn btn-block btn-warning btn-md mt-2">
+                {% if listing.status == 'driver en route' %}Pickup{% else %}Drop-off{% endif %}</a>
+        </div>
+    </div>
+
+    {% else %}
+
+    <div id="main" class="text-center">
+        <p>No current drives! Let's start driving!</p>
+    </div>
+    {% endif %}
+</div>
+
+
+
+{% include 'driver/lower_tab.html' %}
+
+{% endblock %}

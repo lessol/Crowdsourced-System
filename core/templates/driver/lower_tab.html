@@ -1,0 +1,55 @@
+<style>
+    .bottom-tabs {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 60px;
+        display: flex;
+        box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+        text-align: center;
+    }
+
+    .bottom-tabs>a {
+        flex: 1;
+        padding: 5px;
+        color: #BFBFBF;
+        text-decoration: none;
+    }
+
+    .bottom-tabs>a>span {
+        font-size: 13px;
+        font-weight: bold;
+        display: block;
+        font-family: 'Courier New', Courier, monospace;
+    }
+
+    .bottom-tab>a>i {
+        font-size: 20px;
+    }
+
+    .bottom-tabs>a.active {
+        color: #FFC106;
+    }
+</style>
+
+{% url 'driver:available_spots' as available_spots_url %}
+{% url 'driver:current_listing' as current_listing_url %}
+{% url 'driver:archived_spots' as archived_spots_url %}
+{% url 'driver:profile' as profile_url %}
+
+<div class="bottom-tabs d-flex">
+    <a href="{% url 'driver:available_spots' %}" class="{% if request.path == available_spots_url %}active{% endif %}">
+        <i class="fas fa-map-marked-alt"></i>
+        <span>Open Jobs</span>
+    </a>
+    <a href="{% url 'driver:current_listing' %}"
+        class="{% if request.path == current_listing_url or request.path == archived_spots_url%}active{% endif %}">
+        <i class="fas fa-archive"></i>
+        <span>My Drives</span>
+    </a>
+    <a href="{% url 'driver:profile' %}" class="{% if request.path == profile_url %}active{% endif %}">
+        <i class="fas fa-user"></i>
+        <span>Profile</span>
+    </a>
+</div>

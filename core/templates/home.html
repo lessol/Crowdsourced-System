@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% block head %}
+<style>
+  h1 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    width: 100%;
+    position: relative;
+    top: 30px;
+  }
+
+  .display-1 {
+    font-family: "Newsreader";
+    font-size: 40px;
+    text-align: center;
+  }
+
+  .lead {
+    text-align: center;
+  }
+
+  .box {
+    box-sizing: border-box;
+    border: 3px solid transparent;
+    background-clip: padding-box;
+  }
+
+  .card {
+    background-color: transparent;
+    border: 0;
+  }
+
+  .card>a {
+    color: black;
+    margin-top: 2em;
+    font-family: Newsreader;
+    justify-content: center;
+    align-content: center;
+    background: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 0px;
+  }
+
+  .divider {
+    display: none;
+  }
+
+  .homeImg1 {
+    margin-top: 3em;
+    width: 100%;
+    height: auto;
+  }
+
+  .homeImg2 {
+    margin-top: 1em;
+    width: 100%;
+    height: auto;
+  }
+
+  @media screen and (max-width: 750px) {
+    .divider {
+      display: flex;
+      width: 500px;
+      height: 3em;
+    }
+
+    #col-edit {
+      height: 25em;
+    }
+
+    .homeImg1 {
+      display: none;
+    }
+
+    .homeImg2 {
+      display: none;
+    }
+  }
+</style>
+{% endblock %}
+<div class="container">
+  <div class="row">
+    <div class="col box">
+      <div class="card">
+        <h1 class="display-1 mt-5 mb-5">Find your ideal driver anytime & anywhere.</h1>
+        <div class="card">
+          <a href="{% url 'passenger:home' %}" class="btn btn-dark">Passenger</a>
+        </div>
+        <div class="card">
+          <img class="homeImg1" src="../static/passenger.png" alt="passenger image">
+        </div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div id="col-edit" class="col box">
+      <div class="card">
+        <h1 class="display-1 mt-5 mb-5">Start driving anywhere at anytime.</h1>
+        <div class="card">
+          <a href="{% url 'driver:home' %}" class="btn btn-dark" id="buttonHome">Driver</a>
+        </div>
+        <div class="card">
+          <img class="homeImg2" src="../static/driver3.png" alt="passenger image">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

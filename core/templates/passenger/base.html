@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+{% url 'passenger:create_listing' as create_listing_url %}
+{% url 'passenger:profile' as profile_url %}
+{% url 'passenger:current_listings' as current_listings_url %}
+{% url 'passenger:archived_listings' as archived_listings_url %}
+{% url 'passenger:payment_method' as payment_method_url %}
+
+<style>
+    .container {
+        font-family: "Poppins";
+    }
+</style>
+
+<div class="container bg-white mt-4 pt-3 pb-3">
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="text-center">
+                <img src="{% if request.user.passenger.avatar %}{{ request.user.passenger.avatar.url}}{% else %}{% static 'img/avatar.png' %}{% endif %}"
+                    alt="" class="rounded-circle mb-2" width="100" height="100">
+                <h4>{{ request.user.get_full_name }}</h4>
+                <p class="text-secondary">{{ request.user.email }}</p>
+            </div>
+
+            <div class="list-group mt-5">
+                <a href="{% url 'passenger:create_listing' %}"
+                    class="list-group-item list-group-item-action {% if request.path == create_listing_url %} active {% endif %}">Create
+                    a Listing</a>
+                <a href="{% url 'passenger:current_listings' %}"
+                    class="list-group-item list-group-item-action {% if request.path == current_listings_url or request.path == archived_listings_url %} active {% endif %}">My
+                    Listings</a>
+                <a href="{% url 'passenger:profile' %}"
+                    class="list-group-item list-group-item-action {% if request.path == profile_url %} active {% endif %}">Profile
+                    Info</a>
+                <a href="{% url 'passenger:payment_method' %}"
+                    class="list-group-item list-group-item-action {% if request.path == payment_method_url %} active {% endif %}">Payment
+                    Details</a>
+            </div>
+
+        </div>
+        <div class="col-lg-8">
+            {% block main %}
+
+            {% endblock %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

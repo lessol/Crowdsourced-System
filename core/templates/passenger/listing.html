@@ -1,0 +1,160 @@
+{% extends 'passenger/base.html' %}
+
+{% block head %}
+
+<script src="https://maps.googleapis.com/maps/api/js?key={{GOOGLE_MAP_API_KEY}}&callback=initMap&libraries=&v=weekly"
+    defer>
+    </script>
+
+<script>
+
+    var originLat = parseFloat("{{ listing.origin_lat }}");
+    var originLng = parseFloat("{{ listing.origin_lng }}");
+    var endLat = parseFloat("{{ listing.end_lat }}");
+    var endLng = parseFloat("{{ listing.end_lng }}");
+
+    function initMap() {
+        const directionsService = new google.maps.DirectionsService();
+        const directionsRenderer = new google.maps.DirectionsRenderer();
+        const map = new google.maps.Map(document.getElementById("map"), {
+            zoom: 7,
+            center: { lat: 41.85, lng: -87.65 },
+        });
+        directionsRenderer.setMap(map);
+
+        calculateAndDisplayRoute(directionsService, directionsRenderer);
+    }
+
+    function calculateAndDisplayRoute(directionsService, directionsRenderer) {
+        directionsService
+            .route({
+                origin: new google.maps.LatLng(originLat, originLng),
+                destination: new google.maps.LatLng(endLat, endLng),
+                travelMode: google.maps.TravelMode.DRIVING,
+            })
+            .then((response) => {
+                directionsRenderer.setDirections(response);
+            })
+            .catch((e) => window.alert("Directions request failed due to " + status));
+    }
+
+</script>
+
+<style>
+    .media-body {
+        font-family: 'Courier New', Courier, monospace;
+    }
+
+    .photo {
+        object-fit: cover;
+    }
+
+    .photo-blank {
+        border: 2px dashed #DFDFDF;
+        height: 80px;
+        width: 150px;
+        border-radius: 5px;
+        align-items: center;
+        display: flex;
+        justify-content: center;
+        padding: 10px;
+        text-align: center;
+        font-size: 12px;
+        font-family: 'Courier New', Courier, monospace;
+    }
+
+    .row {
+        font-family: 'Courier New', Courier, monospace;
+    }
+
+    #cancel {
+        font-size: 10px;
+    }
+
+    . @media screen and (max-width: 450px) {}
+</style>
+
+{% endblock %}
+
+{% block main %}
+
+<!--Spot Description-->
+<div class="media mb-4">
+
+    <div class="media-body">
+
+        {% if listing.status == 'processing' %}
+        <form method="POST" class="float-right" id="cancelbtn">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-warning" id="cancel">Cancel</button>
+        </form>
+        {% endif %}
+
+        <h6 class="mt-2 mb-2 fas fa-map-marker-alt"> {{listing.origin_point}}</h6>
+        <h6 class="mt-2 mb-2 fas fa-flag-checkered"> {{listing.end_point}}</h6>
+        <p class="text-secondary mt-1">Description: {{listing.description}}</p>
+        <p class="text-secondary">Total Cost: ${{listing.price}}</p>
+
+        <div class="row">
+            <div class="col-lg-3 w">
+                <small class="text-secondary">ACCEPTED VEHICLES</small><br />
+                <span><b>{{listing.Types_of_Vehicle}}</b></span>
+            </div>
+            <div class="col-lg-3">
+                <small class="text-secondary">Passengers</small><br />
+                <span><b>{{spot.Types_of_Vehicle}}</b></span>
+            </div>
+            <div class="col-lg-3">
+                <small class="text-secondary">Reference Image</small><br />
+                <img src="{{ listing.photo.url }}" class="rounded-lg mr-3" width="150" height="150">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--Request Status-->
+<b class="text-secondary">STATUS</b><br />
+<div class="card bg-white mt-2 mb-5">
+    <div class="card-body p-2">
+
+        <div class="row" id="occupation-row">
+            <div class="col-lg-3">
+                <b>Request Status</b><br />
+                <span class="badge badge-warning">{{listing.get_status_display}}</span>
+            </div>
+            <div class="col-lg-3">
+                <b>Driver</b><br />
+                <span>{{listing.driver.user.get_full_name}}</span>
+            </div>
+            <div class="col-lg-3 ">
+                {% if listing.license_photo %}
+                <img id="vehicle_photo" src="{{listing.license_photo.url}}" class="rounded-lg photo" width="150"
+                    height="80">
+                {% else %}
+                <div class="photo-blank">Driver's vehicle will appear here</div>
+                {% endif %}
+            </div>
+            <div id="license_photo" class="col-lg-3">
+                {% if listing.license_photo %}
+                <img src="{{listing.license_photo.url}}" class="rounded-lg photo" width="150" height="80">
+                {% else %}
+                <div class="photo-blank">Driver license plate will appear here</div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!--Spot Map-->
+<div class="d-flex justify-content-between">
+    <b class="text-secondary">Route</b>
+</div>
+
+<div class="card bg-white mt-2">
+    <div class="card-body p=1">
+        <div id="map" style="height: 450px;"></div>
+    </div>
+</div>
+
+{% endblock %}
