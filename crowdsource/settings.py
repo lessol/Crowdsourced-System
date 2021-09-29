@@ -152,7 +152,7 @@ EMAIL_HOST_USER = 'someemail@gmail.com'
 EMAIL_HOST_PASSWORD = 'oahovatest1'
 DEFAULT_FROM_EMAIL = 'OAHOVA <no-reply@oahova.localhost>'
 
-FIREBASE_ADMIN_CRED = os.path.join(BASE_DIR, "oahova-2b1c6-firebase-adminsdk-fz1nb-5bf0117f33.json")
+FIREBASE_ADMIN_CRED = os.path.join(BASE_DIR, "cred")
 
 STRIPE_PUBLIC_API_KEY = "Stripe Public Api Key"
 # For production put the stripe secret key in a seperate place for safety purposes
